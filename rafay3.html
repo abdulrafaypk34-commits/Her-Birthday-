@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiza | Eternal Gaze | 13.02.2026</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Noto+Nastaliq+Urdu&family=Space+Mono&family=Inter:wght@300;600&family=Playfair+Display:italic,wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --pink: #ff4d6d;
+            --deep-red: #800f2f;
+            --gold: #ffb703;
+            --dark-bg: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+            --neon: 0 0 20px rgba(255, 77, 109, 0.6);
+        }
+
+        /* RESET & SCROLL */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 10px; }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        #heartCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* INTRO */
+        .intro-hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .bday-anim {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(3.5rem, 12vw, 7rem);
+            background: linear-gradient(45deg, #fff, var(--pink), var(--gold), #fff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 3s linear infinite, float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(255,77,109,0.3));
+        }
+
+        @keyframes shine { to { background-position: 200% center; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        .shiza-name {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            letter-spacing: 15px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-top: -10px;
+            font-family: 'Space Mono', monospace;
+            opacity: 0;
+            animation: fadeIn 2s forwards 1s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; letter-spacing: 0px; } to { opacity: 1; letter-spacing: 15px; } }
+
+        /* TERMINAL */
+        .terminal-container {
+            padding: 100px 20px;
+            z-index: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .terminal {
+            background: #0d0d0d;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 15px;
+            border: 1px solid #222;
+            padding: 30px;
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .keyword { color: #c678dd; }
+        .func { color: #61afef; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; }
+        .var { color: #e06c75; }
+
+        /* GAME */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 400px;
+            margin: 40px auto;
+        }
+
+        .envelope {
+            aspect-ratio: 1;
+            background: var(--glass);
+            border: 1px solid rgba(255, 77, 109, 0.3);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.4s;
+            backdrop-filter: blur(10px);
+        }
+
+        .envelope:hover { transform: translateY(-10px); box-shadow: var(--neon); }
+
+        /* POETRY */
+        .urdu-text {
+            font-family: 'Noto Nastaliq Urdu', serif;
+            font-size: clamp(1.8rem, 8vw, 2.5rem);
+            line-height: 3;
+            color: var(--pink);
+            direction: rtl;
+        }
+
+        /* MODAL */
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            padding: 30px; backdrop-filter: blur(15px);
+        }
+
+        .modal-content {
+            background: #111; padding: 40px; border-radius: 30px;
+            border: 1px solid var(--gold); max-width: 500px; text-align: center;
+        }
+
+        .close-btn {
+            margin-top: 30px; padding: 12px 30px; background: var(--pink);
+            border: none; color: white; border-radius: 50px; cursor: pointer;
+        }
+
+        /* FLY-IN ANIMATION FOR FINAL NAME */
+        @keyframes flyInS { from { transform: translate(-200%, -200%); opacity: 0; } to { transform: translate(0,0); opacity: 1; } }
+        @keyframes flyInH { from { transform: translate(200%, -200%); opacity: 0; } to { transform: translate(0,0); opacity: 1; } }
+        @keyframes flyInI { from { transform: translate(0, 300%); opacity: 0; } to { transform: translate(0,0); opacity: 1; } }
+        @keyframes flyInZ { from { transform: translate(-200%, 200%); opacity: 0; } to { transform: translate(0,0); opacity: 1; } }
+        @keyframes flyInA { from { transform: translate(200%, 200%); opacity: 0; } to { transform: translate(0,0); opacity: 1; } }
+
+        .fly-letter { display: inline-block; animation-duration: 1.5s; animation-fill-mode: both; }
+    </style>
+</head>
+<body>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <div id="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 id="modalTitle" style="font-family:'Dancing Script'; font-size: 3rem; color:var(--pink);">Letter</h2>
+            <p id="modalText" style="line-height: 1.8; color: #ddd;"></p>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <section class="intro-hero">
+        <div class="bday-anim">Happy Birthday</div>
+        <div class="shiza-name">Shiza</div>
+        <div style="margin-top: 40px; color: var(--pink); font-size: 12px; font-family: 'Space Mono';">SCROLL DOWN</div>
+    </section>
+
+    <section class="terminal-container">
+        <div class="terminal">
+            <div class="line"><span class="keyword">class</span> <span class="var">UnrequitedLove</span>:</div>
+            <div class="line">&nbsp;&nbsp;<span class="keyword">def</span> <span class="func">__init__</span>(self):</div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;self.subject = <span class="string">"Shiza"</span></div>
+            <div class="line">&nbsp;&nbsp;&nbsp;&nbsp;self.intensity = <span class="func">float</span>(<span class="string">'inf'</span>)</div>
+            <div class="line"><br></div>
+            <div class="line"><span class="comment"># Happy Birthday Shiza...</span></div>
+            <div class="line"><span class="func">print</span>(<span class="string">"You are the entire code to my life."</span>)</div>
+        </div>
+    </section>
+
+    <section class="game-section" style="text-align: center; padding: 50px 0;">
+        <div class="letter-grid">
+            <div class="envelope" onclick="openLetter('S')"><span>S</span></div>
+            <div class="envelope" onclick="openLetter('H')"><span>H</span></div>
+            <div class="envelope" onclick="openLetter('I')"><span>I</span></div>
+            <div class="envelope" onclick="openLetter('Z')"><span>Z</span></div>
+        </div>
+    </section>
+
+    <section class="eye-poetry" style="text-align: center; padding: 100px 20px;">
+        <div class="urdu-text">تیری آنکھوں کے سوا دنیا میں رکھا کیا ہے <br> تُو جو مل جائے تو تقدیر نگوں ہو جائے</div>
+    </section>
+
+    <section style="padding: 100px 20px; text-align: center;">
+        <button class="close-btn" style="background: var(--gold); color: black; font-weight: bold; padding: 20px 50px;" onclick="bigCelebration()">CLICK FOR FINAL SURPRISE</button>
+    </section>
+
+    <footer style="text-align: center; padding-bottom: 50px;">
+        <div style="letter-spacing: 5px; font-size: 10px; color: #444;">DESIGNED BY ABDUL RAFAY</div>
+    </footer>
+
+    <script>
+        // BACKGROUND HEARTS
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        let hearts = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+
+        class Heart {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random() * canvas.width; this.y = canvas.height + 100; this.size = Math.random() * 8 + 4; this.speed = Math.random() * 2 + 0.5; this.opacity = Math.random() * 0.3 + 0.1; }
+            update() { this.y -= this.speed; if (this.y < -50) this.reset(); }
+            draw() { ctx.fillStyle = `rgba(255, 77, 109, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size/2, 0, Math.PI * 2); ctx.fill(); }
+        }
+        for(let i=0; i<30; i++) hearts.push(new Heart());
+        function animate() { ctx.clearRect(0,0, canvas.width, canvas.height); hearts.forEach(h => { h.update(); h.draw(); }); requestAnimationFrame(animate); }
+        animate();
+
+        // LETTERS DATABASE
+        const database = {
+            'S': { title: "The Secret", text: "Even if you never know, my favorite part of the day is seeing a glimpse of your smile." },
+            'H': { title: "The Heart", text: "Your heart is as beautiful as your face. May it always be protected from sorrow." },
+            'I': { title: "Inspiration", text: "I look at you and I see everything I want to be—kind, radiant, and full of life." },
+            'Z': { title: "The Zenith", text: "You are the peak of everything beautiful. Happy Birthday Shiza. May 2026 be yours." }
+        };
+        function openLetter(key) { document.getElementById('modalTitle').innerText = database[key].title; document.getElementById('modalText').innerText = database[key].text; document.getElementById('modal').style.display = 'flex'; confetti(); }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        // ULTIMATE 3D SURPRISE WITH FLY-IN NAME
+        function bigCelebration() {
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.7 } });
+            
+            setTimeout(() => {
+                document.body.innerHTML = `
+                    <div id="three-container" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#050110; z-index:100;"></div>
+                    <div id="overlay-content" style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:101; text-align:center; pointer-events:none; width:100%;">
+                        <div style="font-family:'Dancing Script'; font-size: clamp(4rem, 15vw, 8rem); color:#ff4d6d; text-shadow:0 0 30px #ff4d6d; display: flex; justify-content: center; gap: 10px;">
+                            <span class="fly-letter" style="animation-name: flyInS;">S</span>
+                            <span class="fly-letter" style="animation-name: flyInH; animation-delay: 0.2s;">H</span>
+                            <span class="fly-letter" style="animation-name: flyInI; animation-delay: 0.4s;">I</span>
+                            <span class="fly-letter" style="animation-name: flyInZ; animation-delay: 0.6s;">Z</span>
+                            <span class="fly-letter" style="animation-name: flyInA; animation-delay: 0.8s;">A</span>
+                        </div>
+                        <div style="font-family:'Space Mono'; font-size:10px; letter-spacing:10px; color:#ffb703; margin: 20px 0;">INFINITE LOVE STREAM</div>
+                        <h1 id="stream-wish" style="font-family:'Playfair Display'; font-style:italic; font-size:1.5rem; color:white; min-height:80px; transition: opacity 1s; padding: 0 20px;"></h1>
+                    </div>
+                `;
+
+                // THREE.JS SCENE
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.getElementById('three-container').appendChild(renderer.domElement);
+
+                scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                const roses = [];
+                const roseGeo = new THREE.TorusKnotGeometry(0.4, 0.12, 64, 8);
+                const roseMat = new THREE.MeshStandardMaterial({ color: 0xff4d6d });
+                
+                function spawnRose() {
+                    const r = new THREE.Mesh(roseGeo, roseMat);
+                    r.position.set(Math.random()*10-5, Math.random()*10-5, -15);
+                    scene.add(r);
+                    roses.push(r);
+                }
+                setInterval(spawnRose, 800);
+
+                const lanterns = [];
+                const lGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.2, 6);
+                const lMat = new THREE.MeshBasicMaterial({ color: 0xffb703 });
+                for(let i=0; i<30; i++) {
+                    const l = new THREE.Mesh(lGeo, lMat);
+                    l.position.set(Math.random()*20-10, Math.random()*20-10, Math.random()*-15);
+                    scene.add(l);
+                    lanterns.push(l);
+                }
+
+                camera.position.z = 5;
+
+                const wishes = ["You are the most beautiful star in my sky.", "Happy Birthday Shiza.", "You are my favorite code.", "May 2026 be your best year yet."];
+                let wIdx = 0;
+                function cycle() {
+                    const el = document.getElementById('stream-wish');
+                    if(el) { el.style.opacity = 0; setTimeout(() => { el.innerText = wishes[wIdx]; el.style.opacity = 1; wIdx = (wIdx+1)%wishes.length; }, 1000); }
+                }
+                setInterval(cycle, 4000); cycle();
+
+                function render() {
+                    requestAnimationFrame(render);
+                    lanterns.forEach(l => { l.position.y += 0.015; if(l.position.y > 10) l.position.y = -10; });
+                    roses.forEach((r, i) => { r.position.z += 0.1; r.rotation.y += 0.02; if(r.position.z > 6) { scene.remove(r); roses.splice(i, 1); } });
+                    renderer.render(scene, camera);
+                }
+                render();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
