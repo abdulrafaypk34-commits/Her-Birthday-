@@ -3,32 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday!</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Birthday Celebration</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f9f9f9; }
+        #countdown { font-size: 2rem; margin: 20px; }
+        #gallery { display: flex; flex-wrap: wrap; justify-content: center; }
+        #gallery img { width: 30%; margin: 5px; border-radius: 10px; }
+        #musicPlayer { margin: 20px; }
+        #celebrateBtn { padding: 10px 20px; font-size: 1.5rem; background-color: #ff5c5c; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="animated">Happy Birthday!</h1>
-        <div class="confetti"></div>
-        <div class="interactive-letters">
-            <!-- Letters here -->
-        </div>
-        <div class="music-player">
-            <audio controls>
-                <source src="birthday_song.mp3" type="audio/mpeg">
-                Your browser does not support the audio tag.
-            </audio>
-        </div>
-        <div class="photo-gallery">
-            <img src="photo1.jpg" alt="Birthday Photo 1">
-            <img src="photo2.jpg" alt="Birthday Photo 2">
-            <!-- More photos -->
-        </div>
-        <div class="urdu-poetry">
-            <h2>Urdu Poem:</h2>
-            <p>یہ دن تمہارے لئے خوشیوں بھرا ہو...</p>
-        </div>
+    <h1>Welcome to the Birthday Celebration!</h1>
+    <div id="countdown"></div>
+    <div id="gallery">
+        <img src="photo1.jpg" alt="Birthday Photo 1">
+        <img src="photo2.jpg" alt="Birthday Photo 2">
+        <img src="photo3.jpg" alt="Birthday Photo 3">
     </div>
-    <script src="script.js"></script>
+    <div id="musicPlayer">
+        <audio controls>
+            <source src="birthday_song.mp3" type="audio/mpeg">
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+    <button id="celebrateBtn">Celebrate!</button>
+    <script>
+        // Countdown Timer
+        const birthdayDate = new Date('2026-02-08T00:00:00Z').getTime();
+        const countdown = document.getElementById('countdown');
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = birthdayDate - now;
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            if (distance < 0) {
+                clearInterval(timer);
+                countdown.innerHTML = "Time's up!";
+            } else {
+                countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }, 1000);
+        
+        // Celebrate Button
+        document.getElementById('celebrateBtn').onclick = function() {
+            alert('Happy Birthday! Let the celebrations begin!');
+        };
+    </script>
 </body>
 </html>
